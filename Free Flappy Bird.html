@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Free flappy bird</title>
+		<style>
+    canvas {
+      border: 1px solid black;
+      display: block;
+      width: 80vw;
+      height: 70vh;
+    }
+  </style>
+</head>
+<body>
+	<h1>Welcome to my website</h1>
+	<h2>Play flappy bird for free</h2>
+</head>
+<body>
+
+<h3>press 'x' to flap | Reload to restart</h3>
+
+  <canvas id="gameCanvas"></canvas>
+
+  <script>
+    // Canvas and context
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // Set canvas dimensions to full screen
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    // Game variables
+    let bird = {
+      x: 50,
+      y: canvas.height / 2,
+      radius: 20,
+      velocity: 0,
+      gravity: 0.5
+    };
+
+    let pipes = [];
+    let score = 0;
+
+    // Draw bird
+    function drawBird() {
+      ctx.beginPath();
+      ctx.arc(bird.x, bird.y, bird.radius, 0, Math.PI * 2);
+      ctx.fillStyle = 'red';
+      ctx.fill();
+      ctx.closePath();
+    }
+
+    // Draw pipes
+    function drawPipes() {
+      ctx.fillStyle = 'green';
+      pipes.forEach(pipe => {
+        ctx.fillRect(pipe.x, 0, 50, pipe.top);
+        ctx.fillRect(pipe.x, pipe.bottom, 50, canvas.height - pipe.bottom);
+      });
+    }
+
+    // Update game state
+    function update() {
+      bird.velocity += bird.gravity;
+      bird.y += bird.velocity;
+
+      pipes.forEach(pipe => {
+        pipe.x -= 2; // Pipe movement speed
+      });
+
+      // Add new pipes
+      if (pipes.length === 0 || (pipes[pipes.length - 1].x < canvas.width - 200)) {
+        const pipeGap = 150;
+        const pipeHeight = Math.random() * (canvas.height - pipeGap - 100) + 50;
+        pipes.push({
+          x: canvas.width,
+          top: pipeHeight,
+          bottom: pipeHeight + pipeGap
+        });
+      }
+
+      // Check collision
+      pipes.forEach(pipe => {
+        if (
+          (bird.x + bird.radius > pipe.x && bird.x - bird.radius < pipe.x + 50) &&
+          (bird.y - bird.radius < pipe.top || bird.y + bird.radius > pipe.bottom)
+        ) {
+          // Game over
+          alert(`Game Over! Score: ${score}`);
+          location.reload();
+        }
+      });
+
+      // Update score
+      pipes.forEach(pipe => {
+        if (pipe.x === bird.x) {
+          score++;
+        }
+      });
+    }
+
+    // Draw game elements
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawBird();
+      drawPipes();
+      ctx.fillStyle = 'black';
+      ctx.font = '20px Arial';
+      ctx.fillText(`Score: ${score}`, 10, 30);
+    }
+
+    // Game loop
+    function gameLoop() {
+      update();
+      draw();
+      requestAnimationFrame(gameLoop);
+    }
+
+    // Event listeners
+    document.addEventListener('keydown', e => {
+      if (e.key === 'x') {
+        bird.velocity = -8; // Flap speed
+      }
+    });
+
+    gameLoop();
+  </script>
+</body>
+</html>
